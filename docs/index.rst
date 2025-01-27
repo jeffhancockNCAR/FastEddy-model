@@ -30,6 +30,7 @@ FastEddy should be cited as shown here:
 
    release_notes.rst
    run_ncar_hpcs.rst
+   run_amd_gpus.rst
    downloads.rst
    Tutorials/index
    publications.rst
