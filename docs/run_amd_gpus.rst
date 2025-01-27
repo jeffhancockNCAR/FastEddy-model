@@ -8,7 +8,7 @@ These instructions will help users get started with building FastEddy for system
 
    * `Oak Ridge National Laboratory's Frontier <https://www.olcf.ornl.gov/frontier/>`_
    * `Pawsey Supercomputing Centre's Setonix <https://pawsey.org.au/systems/setonix/>`_
-   * `CSCS's Lumi <https://www.lumi-supercomputer.eu/may-we-introduce-lumi/>_`
+   * `CSCS's Lumi <https://www.lumi-supercomputer.eu/may-we-introduce-lumi/>`_
    * `Fluid Numerics' Galapagos <https://galapagos.fluidnumerics.com>`_
 
 
