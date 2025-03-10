@@ -6,7 +6,7 @@ name: CIT on derecho
 on:
   # Triggers the workflow on pull request events but only for the "feature_CIT" branch
   pull_request:
-    types: [opened, reopened, synchronize]
+    types: [labeled]
     branches: 
       - feature_CIT 
     paths-ignore:
