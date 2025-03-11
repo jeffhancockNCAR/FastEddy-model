@@ -49,7 +49,7 @@ jobs:
       # Run FastEddy
       - name: Submit job of Example 2
         run: |
-          cd /glade/work/fasteddyrt/action-runner/_work/FastEddy-model/Example02_CBL
+          cd /glade/work/fasteddyrt/actions-runner/_work/FastEddy-model/Example02_CBL
           qsub -Wblock=true fasteddy_pbs_script_derecho_10steps.sh
           ls -l output_10steps
 
