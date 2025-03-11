@@ -46,6 +46,15 @@ jobs:
           make clean
           make
 
+      # Run FastEddy
+      - name: Submit job of Example 2
+        run: |
+          cd /glade/work/fasteddyrt/action-runner/_work/FastEddy-model/Example02_CBL
+          qsub -Wblock=true fasteddy_pbs_script_derecho_10steps.sh
+          ls -l output_10steps
+
+      # Run pytest on the results of the FastEddy run
+
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
         run: |
