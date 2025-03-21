@@ -81,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pytest-report
-          path: tests/report.html
+          path: /glade/work/fasteddyrt/actions-runner/_work/FastEddy-model/tests/report.html
       
       # Runs a simple scritpt that appends the datetime to a file
       - name: Record the datetime of the run
