@@ -4,6 +4,18 @@ name: Keep Alive WF
 
 # Controls when the workflow will run
 on:
+  # Triggers the workflow on pull request events but only for the "feature_CIT" branch
+  pull_request:
+    types: [labeled]
+    branches: 
+      - feature*
+    paths-ignore:
+      #- 'docs/**'
+      - '.github/pull_request_template.md'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '**/README.md'
+      - '**/LICENSE.md'
+      
   # Allows you to run this workflow manually from the Actions tab, or from github CLI, which will be used for this workflow (from cron).
   workflow_dispatch:
 
@@ -12,7 +24,7 @@ jobs:
   # This workflow contains a single job called "keep_alive"
   keep_alive:
     # Only do the actions when manually run
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event.label.name == 'run-pr-tests' || github.event_name == 'workflow_dispatch'
     # The type of runner that the job will run on
     runs-on: shr-derecho
 
