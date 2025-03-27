@@ -67,9 +67,6 @@ jobs:
       # Run pytest on the results of the FastEddy run
       - name: Run pytest
         run: |
-          # This dir will change once these tests are in the repository
-          # JTH Try commenting out cd.  Good chance no longer necessary now that tests dir is in the branch.  pytest will probably find it.
-          #cd /glade/work/fasteddyrt/actions-runner/_work/FastEddy-model/tests
           source /glade/work/ishitas/python_envs/py_derecho/bin/activate
           pytest \
           --tb=no \
