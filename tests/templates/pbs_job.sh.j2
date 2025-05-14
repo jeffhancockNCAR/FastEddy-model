@@ -1,0 +1,21 @@
+#!/bin/bash
+#PBS -A {{ pbs.account }}
+#PBS -N {{ pbs.job_name }}
+#PBS -l select={{ pbs.select }}
+#PBS -l walltime={{ pbs.walltime }}
+#PBS -q {{ pbs.queue }}
+{% if pbs.join_output %}#PBS -j oe{% endif %}
+#PBS -l job_priority={{ pbs.priority }}
+
+export BASEDIR={{ paths.repo_root }}
+export SRCDIR=${BASEDIR}/{{ paths.src_subdir }}
+export TUTORIALDIR=${BASEDIR}/{{ paths.tutorials_subdir }}
+
+{% if execution.copy_examples %}
+cp ${TUTORIALDIR}/examples/{{ test_case.input_file }} \
+   ${TUTORIALDIR}/examples/{{ test_case.base_name }}_{{ execution.timesteps }}steps.in
+{% endif %}
+
+mpiexec -n {{ execution.mpi_ranks }} --ppn {{ execution.mpi_ranks }} \
+  {{ execution.launcher }} ${SRCDIR}/FastEddy \
+  ${TUTORIALDIR}/examples/{{ test_case.base_name }}_{{ execution.timesteps }}steps.in
