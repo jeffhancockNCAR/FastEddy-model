@@ -1,0 +1,4 @@
+execution:
+  pbs:
+    queue: "derecho"
+    walltime: "06:00:00"

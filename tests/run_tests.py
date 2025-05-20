@@ -1,8 +1,8 @@
 import os, sys, argparse
 from jinja2 import Environment, FileSystemLoader
-from tests.utils.environment import load_and_merge_config, validate_cfg
-from tests.utils.compiler import Compiler
-from tests.utils.executor import Executor
+from utils.environment import load_and_merge_config, validate_cfg
+#from utils.compiler import Compiler
+#from utils.executor import Executor
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -19,7 +19,7 @@ def main():
     cfg = load_and_merge_config(args.config, args.suite)
     validate_cfg(cfg, required_keys=[
         "paths.repo_root","compile.enabled","execution.pbs",
-        "execution.mpi_ranks","execution.timesteps"
+        "execution.mpi_ranks","test_cases"
     ])
 
     # 2. Optional compile
@@ -28,8 +28,9 @@ def main():
             sys.exit("Compilation failed – aborting.")
 
     # 3. Load test suite
-    suite_cfg = load_yaml(f"tests/test_suites/{args.suite}.yml")
-    test_cases = suite_cfg["test_cases"]
+    #suite_cfg = load_yaml(f"tests/test_suites/{args.suite}.yml")
+    #test_cases = suite_cfg["test_cases"]
+    test_cases = cfg["test_cases"]
     if args.test_case:
         test_cases = [tc for tc in test_cases if tc["name"] == args.test_case]
 

@@ -1,0 +1,22 @@
+paths:
+  repo_root: "/glade/work/.../FastEddy-model"              # JTH probably useless.  Needs to be known to find default.yml!
+  output_dir: "/glade/scratch/$USER/fasteddy_results"
+
+compile:
+  enabled: true
+
+execution:
+# Probably don't need pbs in here, since there is a pbs.yml file
+#  pbs:
+#    account: "NRAL0031"
+#    job_name: "FastEddy"
+#    walltime: "12:00:00"
+#    queue: "main"
+#    join_output: true
+#    priority: "economy"
+  mpi_ranks: 4
+  launcher: "set_gpu_rank"
+
+environment: "nsf_ncar"
+
+scheduler: "pbs"

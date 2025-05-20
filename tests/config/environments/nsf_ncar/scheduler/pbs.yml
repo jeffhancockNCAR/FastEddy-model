@@ -1,0 +1,8 @@
+execution:
+  pbs:
+    account: "NRAL0031"
+    job_name: "FastEddy"
+    walltime: "12:00:00"
+    queue: "main"
+    join_output: true
+    priority: "economy"

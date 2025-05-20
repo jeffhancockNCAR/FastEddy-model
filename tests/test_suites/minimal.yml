@@ -1,0 +1,32 @@
+# Would we want to optionally be able to specify any of timesteps, outputfreq, or batchsteps at this top level, which
+# could then be over-ridden by specific tests?  Let's say yes for now...
+timesteps: 10
+outputfreq: 2
+batchsteps: 2
+
+test_cases:
+  - Example01_NBL:
+      # Total number of time steps for the FastEddy run (required)
+      timesteps: 10
+      
+      # frequency (in timesteps) at which to produce output (required)
+      outputfreq: 2
+      
+      # Number of timesteps to compute in batch launch, must have batchsteps <= timesteps (defaults to outputfreq)
+      batchsteps: 2
+      
+      # Reference directory containing truth data for the run.  Can be relative to repo_root or absolute (start with '/') (required)
+      pytest_ref_dir: "/glade/work/fasteddyrt/actions-runner/_work/FastEddy-model/Example01_NBL/reference_10steps"
+      
+      # Name of pytest report for the test case.  Defaults to test label (ie Example01_NBL) + "_report.html" ?
+      pytest_report_name: "Example01_NBL_report.html"
+      
+  - Example02_CBL:
+      outputfreq: 5
+      batchsteps: 5
+      pytest_ref_dir: "/glade/work/fasteddyrt/actions-runner/_work/FastEddy-model/Example02_CBL/reference_10steps"
+      pytest_report_name: "Example02_CBL_report.html"
+      
+  - Example03_SBL:
+      pytest_ref_dir: "/glade/work/fasteddyrt/actions-runner/_work/FastEddy-model/Example03_SBL/reference_10steps"
+      pytest_report_name: "Example03_SBL_report.html"

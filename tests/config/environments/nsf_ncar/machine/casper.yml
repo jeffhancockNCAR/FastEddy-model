@@ -1,0 +1,5 @@
+execution:
+  pbs:
+    queue: "casper"
+    walltime: "06:00:00"
+    

@@ -1,0 +1,10 @@
+# A bare-bones config file for use on eldorado (Jeff's server)
+
+# The top level config file has to contain the repo_location at a bare minimum.
+# If no tests are supplied, it needs to be used in conjunction with one of the standard test suites (minimal or comprehensive)
+paths:
+  repo_root: "/d1/workarea/git/fork/FastEddy-model"
+
+# Possible over-rides (these should be in default.yml)
+#environment: "nsf_ncar"
+#scheduler: "pbs"
