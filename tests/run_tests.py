@@ -1,6 +1,6 @@
 import os, sys, argparse
 from jinja2 import Environment, FileSystemLoader
-from utils.environment import load_and_merge_config, validate_cfg
+from utils.setup_config import load_and_merge_config, validate_cfg
 #from utils.compiler import Compiler
 #from utils.executor import Executor
 
