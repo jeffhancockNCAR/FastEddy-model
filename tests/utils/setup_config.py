@@ -48,6 +48,8 @@ PBS = 'pbs'
 PREEMPT = 'preempt'
 PREMIUM = 'premium'
 PRIORITY = 'priority'
+PYTEST_REF_DIR = 'pytest_ref_dir'
+PYTEST_REPORT_NAME = 'pytest_report_name'
 QUEUE = 'queue'
 REGULAR = 'regular'
 REPO_ROOT = 'repo_root'
@@ -275,21 +277,58 @@ def validate_cfg(config, required_keys):
     else:
         logger.info(str(num_test_cases) + ' test cases specified.')
         
-    #  Check that there is a .in file for each test in tutorials/examples in the repo.
+    #  Check test_case settings
     paths = config[PATHS]
     repo_root = paths[REPO_ROOT]
     examples_path = os.path.join(repo_root, TUTORIALS, EXAMPLES)
     any_missing = False
     for test_case in test_cases:
         for key in test_case.keys(): # There will be only one key for the test case, which is its name
-            filepath = os.path.join(examples_path, key + IN_FILE_EXT)
-            logger.info('Checking for existence of file ' + filepath)
+            #  Check that there is a .in file for the test in tutorials/examples in the repo.
+            filepath = os.path.join(examples_path, key + IN_FILE_EXT) 
             if not os.path.exists(filepath):
-                any_missing = True
-                logger.info('Necessary file missing: ' + filepath)
-    if any_missing:
-        logger.info('Stopping.')
-        exit(6)
+                logger.info('Necessary file missing: ' + filepath + '. Stopping.')
+                exit(6)
+            
+            # Make sure the pytest_ref_dir exists
+            test_case_settings = test_case[key]
+            ref_dir = test_case_settings[PYTEST_REF_DIR]
+            if not os.path.isdir(ref_dir):
+                logger.info('Pytest reference dir ' + ref_dir + ' does not exist. Stopping')
+                exit(7)
+            
+            # Make sure the pytest_report_name is a str
+            report_name = test_case_settings[PYTEST_REPORT_NAME]
+            if not type(report_name) == str:
+                logger.info('Value of ' + TEST_CASES + '.' + key + '.' + PYTEST_REPORT_NAME + ' is not a string type: ' + account)
+                exit(8)
+                
+            #   timesteps - make sure it's an int
+            try:
+                timesteps = test_case_settings[TIMESTEPS]
+                if not type(timesteps) == int:
+                    logger.info('Value of ' + TEST_CASES + '.' + key + '.' + TIMESTEPS + ' is not an int type: ' + timesteps)
+                    exit(9)
+            except KeyError:
+                pass # Not required
+        
+            #   outputfreq - make sure it's an int
+            try:
+                outputfreq = test_case_settings[OUTPUTFREQ]
+                if not type(outputfreq) == int:
+                    logger.info('Value of ' + TEST_CASES + '.' + key + '.' + OUTPUTFREQ + ' is not an int type: ' + outputfreq)
+                    exit(10)
+            except KeyError:
+                pass # Not required
+        
+            #   batchsteps - make sure it's an int
+            try:
+                batchsteps = test_case_settings[BATCHSTEPS]
+                if not type(batchsteps) == int:
+                    logger.info('Value of ' + TEST_CASES + '.' + key + '.' + BATCHSTEPS + ' is not an int type: ' + batchsteps)
+                    exit(11)
+            except KeyError:
+                pass # Not required
     
     # Already checked that repo_root is a directory in load_and_merge_config.
     
@@ -302,26 +341,28 @@ def validate_cfg(config, required_keys):
             os.makedirs(output_dir)
         except:
             logger.info('Could not create output directory.  Stopping.')
-            exit(7)
+            exit(12)
     
     #   compile_enabled - check that it's a bool
     compile_enabled = config[COMPILE][ENABLED]
     if not type(compile_enabled) == bool:
         logger.info('Value of ' + COMPILE + '.' + ENABLED + ' is not a bool type (true or false): ' + compile_enabled)
-        exit(8)
+        exit(13)
             
     # Check execution values.
     #    mpi_ranks - make sure it's an int
     mpi_ranks = config[EXECUTION][MPI_RANKS]
     if not type(mpi_ranks) == int:
         logger.info('Value of ' + EXECUTION + '.' + MPI_RANKS + ' is not an int type: ' + mpi_ranks)
-        exit(9)
+        exit(14)
             
     #    launcher - check against list of valid values
     launcher = config[EXECUTION][LAUNCHER]
     if not launcher in VALID_LAUNCHERS:
         logger.info('Invalid value of ' + EXECUTION + '.' + LAUNCHER + ': ' + launcher)
+        exit(15)
         
+    # Check scheduler settings - depends on what schedulre is specified (only pbs is supported so far)
     scheduler = config[SCHEDULER]
     
     if scheduler == PBS:
@@ -330,25 +371,25 @@ def validate_cfg(config, required_keys):
         account = config[EXECUTION][PBS][ACCOUNT]
         if not type(account) == str:
             logger.info('Value of ' + EXECUTION + '.' + PBS + '.' + ACCOUNT + ' is not a string type: ' + account)
-            exit(10)
+            exit(16)
             
         #       job_name - check that it's a string
         job_name = config[EXECUTION][PBS][JOB_NAME]
         if not type(job_name) == str:
             logger.info('Value of ' + EXECUTION + '.' + PBS + '.' + JOB_NAME + ' is not a string type: ' + job_name)
-            exit(11)
+            exit(17)
             
         #       walltime - check that it's a string, with 3 integers separated by colons, each in proper range
         walltime = config[EXECUTION][PBS][WALLTIME]
         if not type(job_name) == str:
             logger.info('Value of ' + EXECUTION + '.' + PBS + '.' + WALLTIME + ' is not a string type: ' + walltime)
-            exit(12)
+            exit(18)
         else:
             # Check some more things...
             components = walltime.split(':')
             if len(components) != 3:
                 logger.info('Value of ' + EXECUTION + '.' + PBS + '.' + WALLTIME + ' does not appear to be in the correct format of "HH:MM:SS": ' + walltime)
-                exit(13)
+                exit(19)
             else:
                 # Check that the components look like ints
                 for i in range(len(components)):
@@ -357,77 +398,50 @@ def validate_cfg(config, required_keys):
                         comp_val = int(comp)
                         if (i != 0) and (comp_val > 59 or comp_val < 0):
                             logger.info('Value of ' + EXECUTION + '.' + PBS + '.' + WALLTIME + ' does not appear to be in the correct format of "HH:MM:SS": ' + walltime + '. (MM or SS is not between 0 and 59)')
-                            exit(13)
+                            exit(19)
                     except:
                         logger.info('Value of ' + EXECUTION + '.' + PBS + '.' + WALLTIME + ' does not appear to be in the correct format of "HH:MM:SS": ' + walltime)
-                        exit(13)
+                        exit(19)
         
         #       queue - check against list of valid values
         queue = config[EXECUTION][PBS][QUEUE]
         if not queue in VALID_QUEUES:
             logger.info('Invalid value of ' + EXECUTION + '.' + PBS + ': ' + QUEUE)
-            exit(14)
+            exit(20)
         
         #       join_output - check that it's a bool
         join_output = config[EXECUTION][PBS][JOIN_OUTPUT]
         if not type(join_output) == bool:
             logger.info('Value of ' + EXECUTION + '.' + PBS  + '.' + JOIN_OUTPUT + ' is not a bool type (true or false): ' + join_output)
-            exit(15)
+            exit(21)
         
         #       priority - check against list of valid values
         priority = config[EXECUTION][PBS][PRIORITY]
         if not priority in VALID_PRIORITIES:
             logger.info('Invalid value of ' + EXECUTION + '.' + PBS  + '.' + PRIORITY + ': ' + priority)
-            exit(16)
+            exit(22)
         
         #       command - check against list of valid values
         command = config[EXECUTION][PBS][COMMAND]
         if not command in VALID_COMMANDS:
             logger.info('Invalid value of ' + EXECUTION + '.' + PBS  + '.' + COMMAND + ': ' + command)
-            exit(17)
+            exit(23)
         
     elif scheduler == SLURM:
         logger.info(SLURM + 'scheduler not yet implemented. Stopping.')
-        exit(18)
+        exit(24)
     else:
         logger.info('Unsupported scheduler: ' + scheduler + '. Stopping.')
-        exit(18)
+        exit(25)
         
     #   environment - check against list of valid values
     environment = config[ENVIRONMENT]
     if not environment in VALID_ENVIRONMENTS:
         logger.info('Invalid value of ' + ENVIRONMENT + ': ' + environment)
-        exit(19)
+        exit(26)
     elif environment == DOE_OLCF:
         logger.info(DOE_OLCF + 'environment not yet implemented. Stopping.')
-        exit(19)
-        
-    #   timesteps - make sure it's an int
-    try:
-        timesteps = config[TIMESTEPS]
-        if not type(timesteps) == int:
-            logger.info('Value of ' + TIMESTEPS + ' is not an int type: ' + timesteps)
-            exit(20)
-    except KeyError:
-        pass # Not required
-        
-    #   outputfreq - make sure it's an int
-    try:
-        outputfreq = config[OUTPUTFREQ]
-        if not type(outputfreq) == int:
-            logger.info('Value of ' + OUTPUTFREQ + ' is not an int type: ' + outputfreq)
-            exit(21)
-    except KeyError:
-        pass # Not required
-        
-    #   batchsteps - make sure it's an int
-    try:
-        batchsteps = config[BATCHSTEPS]
-        if not type(batchsteps) == int:
-            logger.info('Value of ' + BATCHSTEPS + ' is not an int type: ' + batchsteps)
-            exit(22)
-    except KeyError:
-        pass # Not required
+        exit(26)
         
     logger.info('Configuration is OK.')
         
