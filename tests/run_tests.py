@@ -1,8 +1,11 @@
 import os, sys, argparse
+import logging
 from jinja2 import Environment, FileSystemLoader
 from utils.setup_config import load_and_merge_config, validate_cfg
-#from utils.compiler import Compiler
-#from utils.executor import Executor
+from utils.compiler import Compiler
+from utils.executor import Executor
+
+logger = logging.getLogger(__name__)
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -14,6 +17,9 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    logging.basicConfig(filename='run_tests.log', level=logging.INFO)
+    logger.info('Start run_tests.py')
 
     # 1. Load & validate config
     cfg = load_and_merge_config(args.config, args.suite)
@@ -61,6 +67,8 @@ def main():
     # 6. Aggregate & report
     summary = Executor.aggregate_results(results)
     print(summary)
+
+    logger.info('End run_tests.py')
 
 if __name__ == "__main__":
     main()
