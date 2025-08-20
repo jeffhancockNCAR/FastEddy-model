@@ -4,18 +4,22 @@
 #PBS -l select={{ pbs.select }}
 #PBS -l walltime={{ pbs.walltime }}
 #PBS -q {{ pbs.queue }}
-{% if pbs.join_output %}#PBS -j oe{% endif %}
+{% if pbs.join_output %}
+#PBS -j oe
+{% endif %}
 #PBS -l job_priority={{ pbs.priority }}
 
 export BASEDIR={{ paths.repo_root }}
 export SRCDIR=${BASEDIR}/{{ paths.src_subdir }}
 export TUTORIALDIR=${BASEDIR}/{{ paths.tutorials_subdir }}
+module load cuda
 
-{% if execution.copy_examples %}
-cp ${TUTORIALDIR}/examples/{{ test_case.input_file }} \
-   ${TUTORIALDIR}/examples/{{ test_case.base_name }}_{{ execution.timesteps }}steps.in
-{% endif %}
+# Log environment and working directory
+echo "PBS_O_WORKDIR: $PBS_O_WORKDIR"
+echo "Current working dir: $(pwd)"
+echo "Hostname: $(hostname)"
+echo "Running FastEddy job: {{ test_case.name }}"
 
 mpiexec -n {{ execution.mpi_ranks }} --ppn {{ execution.mpi_ranks }} \
   {{ execution.launcher }} ${SRCDIR}/FastEddy \
-  ${TUTORIALDIR}/examples/{{ test_case.base_name }}_{{ execution.timesteps }}steps.in
+  ${TUTORIALDIR}/examples/{{ test_case.base_name }}_{{ execution.timesteps | default(10) }}steps.in

@@ -2,6 +2,7 @@ execution:
   pbs:
     account: "NRAL0031"
     job_name: "FastEddy"
+    select: "1:ncpus=4:mpiprocs=4:ngpus=4:mem=100GB"
     walltime: "12:00:00"
     queue: "main"
     join_output: true

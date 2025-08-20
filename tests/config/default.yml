@@ -1,5 +1,5 @@
 paths:
-  output_dir: "/glade/derecho/scratch/$USER/fasteddy_results"
+  output_dir: "/glade/derecho/scratch/fasteddyrt/fasteddy_results"
 
 compile:
   enabled: true

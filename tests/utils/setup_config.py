@@ -12,6 +12,7 @@ import logging
 import os
 import socket
 import yaml
+from datetime import datetime
 
 # Some useful "constants"
 ACCOUNT = 'account'
@@ -71,7 +72,7 @@ VALID_LAUNCHERS = [SET_GPU_RANK]
 VALID_PRIORITIES = [REGULAR, PREMIUM, ECONOMY]
 VALID_QUEUES = [CASPER, DERECHO, MAIN, PREEMPT, DEVELOP]
 
-def load_and_merge_config(config_fn, suite): 
+def load_and_merge_config(config_fn, suite, logger=None): 
     """Load and merge the configuration files for the suite of tests.
     
     Load the appropriate configuration files, which each subsequent one over-riding the previous one(s), in this order:
@@ -83,8 +84,6 @@ def load_and_merge_config(config_fn, suite):
     
     Returns a dictionary of configuration values
     """
-    
-    logger = logging.getLogger(__name__)
     
     # Load the specified config file.  Even though this comes last in the merge, we need a few things from it 
     # to start with, such as the repo_location
@@ -237,13 +236,11 @@ def merge_configs(base, override):
     return base
 
 
-def validate_cfg(config, required_keys):
+def validate_cfg(config, required_keys, logger=None):
     """Validate the configuration file, making sure it contains the required keys
     
     required_keys is a list of keys, each potentially being nested and separated by periods.  Example: paths.repo_root
     """
-    
-    logger = logging.getLogger(__name__)
     
     logger.info('Validating configuration.')
     
@@ -333,14 +330,15 @@ def validate_cfg(config, required_keys):
     # Already checked that repo_root is a directory in load_and_merge_config.
     
     # Check that the output_dir exists or can be created
-    output_dir = paths[OUTPUT_DIR]
+    date_str = datetime.now().strftime("%Y%m%d")  # e.g. 20250812
+    output_dir = str(paths[OUTPUT_DIR]) + "_" + date_str
     if not os.path.isdir(output_dir):
         logger.info('Output dir ' + output_dir + ' does not exist.  Will try to create it.')
         # Doesn't exist (yet), but can we create it?
         try:
             os.makedirs(output_dir)
-        except:
-            logger.info('Could not create output directory.  Stopping.')
+        except Exception as e:
+            logger.info('Could not create output directory.  Stopping. ' + str(e))
             exit(12)
     
     #   compile_enabled - check that it's a bool

@@ -1,0 +1,21 @@
+#!/bin/bash
+#SBATCH --account={{ slurm.account }}
+#SBATCH --job-name={{ slurm.job_name }}
+#SBATCH --time={{ slurm.walltime }}
+#SBATCH --partition={{ slurm.queue }}
+#SBATCH --nodes=1
+#SBATCH --ntasks={{ execution.mpi_ranks }}
+#SBATCH --output={{ test_case.name }}.out
+#SBATCH --error={{ test_case.name }}.err
+
+export BASEDIR={{ paths.repo_root }}
+export SRCDIR=${BASEDIR}/{{ paths.src_subdir }}
+export TUTORIALDIR=${BASEDIR}/{{ paths.tutorials_subdir }}
+
+{% if execution.copy_examples %}
+cp ${TUTORIALDIR}/examples/{{ test_case.input_file }} \
+   ${TUTORIALDIR}/examples/{{ test_case.base_name }}_{{ execution.timesteps }}steps.in
+{% endif %}
+
+srun {{ execution.launcher }} ${SRCDIR}/FastEddy \
+  ${TUTORIALDIR}/examples/{{ test_case.base_name }}_{{ execution.timesteps }}steps.in

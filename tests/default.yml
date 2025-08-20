@@ -1,0 +1,14 @@
+paths:
+  output_dir: "/glade/derecho/scratch/ishitas/fasteddy_results"
+  repo_root: "/glade/work/fasteddyrt/ishita/TestFramework/FastEddy-model"
+
+compile:
+  enabled: true
+
+execution:
+  mpi_ranks: 4
+  launcher: "set_gpu_rank"
+
+environment: "nsf_ncar"
+
+scheduler: "pbs"

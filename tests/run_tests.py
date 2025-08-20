@@ -1,11 +1,8 @@
-import os, sys, argparse
-import logging
+import os, sys, argparse, logging
 from jinja2 import Environment, FileSystemLoader
 from utils.setup_config import load_and_merge_config, validate_cfg
 from utils.compiler import Compiler
 from utils.executor import Executor
-
-logger = logging.getLogger(__name__)
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -13,62 +10,80 @@ def parse_args():
     p.add_argument("-s", "--suite", choices=["minimal","comprehensive"], default="minimal")
     p.add_argument("--no-compile", action="store_true")
     p.add_argument("-t", "--test-case")
+    p.add_argument("-l", "--log-file", help="Path to log file")
     return p.parse_args()
+
+def setup_logger(log_path):
+    logger = logging.getLogger("FastEddyTestSuite")
+    logger.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
+
+    fh = logging.FileHandler(log_path)
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.INFO)
+    ch.setFormatter(formatter)
+
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
+    return logger
 
 def main():
     args = parse_args()
 
-    logging.basicConfig(filename='run_tests.log', level=logging.INFO)
-    logger.info('Start run_tests.py')
+    log_file = args.log_file if args.log_file else "run_tests.log"
+    logger = setup_logger(log_file)
+    logger.info("Starting FastEddy test suite")
 
     # 1. Load & validate config
-    cfg = load_and_merge_config(args.config, args.suite)
-    validate_cfg(cfg, required_keys=[
-        "paths.repo_root","compile.enabled","execution.pbs",
-        "execution.mpi_ranks","test_cases"
-    ])
+    cfg = load_and_merge_config(args.config, args.suite, logger=logger)
+    print(cfg)
+    print("Validating....")
+    validate_cfg(config=cfg,
+             required_keys=["paths.repo_root", "compile.enabled", "execution.pbs", "execution.mpi_ranks", "test_cases"],logger=logger)
 
-    # 2. Optional compile
+    logger.info("Config loaded and validated.")
+    
+    # 2. Optional compilation
     if cfg["compile"]["enabled"] and not args.no_compile:
-        if not Compiler.compile_fasteddy(cfg["paths"]["repo_root"]):
-            sys.exit("Compilation failed – aborting.")
+        from utils.compiler import Compiler
+        logger.info("Compiling FastEddy...")
+        success = Compiler.compile_fasteddy(cfg["paths"]["repo_root"],logger=logger)
+        if not success:
+            logger.error("Compilation failed. Aborting.")
+            sys.exit("[RunTests] Compilation failed. Aborting.")
 
-    # 3. Load test suite
-    #suite_cfg = load_yaml(f"tests/test_suites/{args.suite}.yml")
-    #test_cases = suite_cfg["test_cases"]
+    
+    # 3. Initialize executor
+    executor = Executor(cfg, logger=logger)
+
+    # 4. Extract relevant test cases
     test_cases = cfg["test_cases"]
     if args.test_case:
-        test_cases = [tc for tc in test_cases if tc["name"] == args.test_case]
+        filtered = []
+        for tc in test_cases:
+            for name in tc:
+                if name == args.test_case:
+                    filtered.append({name: tc[name]})
+        if not filtered:
+            logger.error(f"No test case found with name '{args.test_case}'")
+            sys.exit(f"[RunTests] No test case found with name '{args.test_case}'")
+        test_cases = filtered
 
-    # 4. Prepare Jinja
-    tpl_dir = os.path.join(os.path.dirname(__file__), "utils", "templates")
-    jenv = Environment(loader=FileSystemLoader(tpl_dir), trim_blocks=True, lstrip_blocks=True)
-    tpl = jenv.get_template("pbs_job.sh.j2")
 
-    results = []
-    workdir = os.path.abspath("fasteddy_work")
-    os.makedirs(workdir, exist_ok=True)
-
-    # 5. Loop over cases
+    # 5. Run test cases
     for tc in test_cases:
-        script = tpl.render(pbs=cfg["execution"]["pbs"],
-                            paths=cfg["paths"],
-                            execution=cfg["execution"],
-                            test_case=tc)
-        script_path = os.path.join(workdir, f"run_{tc['name']}.sh")
-        with open(script_path, "w") as f: f.write(script)
-        os.chmod(script_path, 0o755)
+        for name, case_cfg in tc.items():
+            logger.info(f"Running test case: {name}")
+            executor.run_test_case(name, case_cfg)
 
-        Executor.submit_and_wait(script_path)
-        Executor.collect_outputs(tc, cfg)
-        res = Executor.run_pytest(tc, cfg)
-        results.append(res)
-
-    # 6. Aggregate & report
-    summary = Executor.aggregate_results(results)
-    print(summary)
-
-    logger.info('End run_tests.py')
+    executor.wait_for_jobs()
+    executor.run_all_pytests()
+    logger.info("All tests completed.")
 
 if __name__ == "__main__":
     main()
