@@ -10,6 +10,7 @@
 #PBS -l job_priority={{ pbs.priority }}
 
 export BASEDIR={{ paths.repo_root }}
+export OUTPUTDIR={{ paths.output_dir }}
 export SRCDIR=${BASEDIR}/{{ paths.src_subdir }}
 export TUTORIALDIR=${BASEDIR}/{{ paths.tutorials_subdir }}
 module load cuda
@@ -22,4 +23,4 @@ echo "Running FastEddy job: {{ test_case.name }}"
 
 mpiexec -n {{ execution.mpi_ranks }} --ppn {{ execution.mpi_ranks }} \
   {{ execution.launcher }} ${SRCDIR}/FastEddy \
-  ${TUTORIALDIR}/examples/{{ test_case.base_name }}_{{ execution.timesteps | default(10) }}steps.in
+  ${OUTPUTDIR}/{{ test_case.base_name }}/{{ test_case.base_name }}_{{ execution.timesteps | default(10) }}steps.in
