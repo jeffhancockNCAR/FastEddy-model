@@ -259,7 +259,7 @@ def validate_cfg(config, required_keys, logger=None):
             else:
                 logger.info('Required key not found: ' + compound_key)
                 exit(4)
-        logger.info('Value of ' + compound_key + str(value))
+        logger.info('Value of ' + compound_key + ': ' + str(value))
     
     # Check that there is at lease one test case
     try:

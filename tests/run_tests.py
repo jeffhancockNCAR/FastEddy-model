@@ -7,7 +7,7 @@ from utils.executor import Executor
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("-c", "--config", required=True)
-    p.add_argument("-s", "--suite", choices=["minimal","comprehensive"], default="minimal")
+    p.add_argument("-s", "--suite", default="minimal")
     p.add_argument("--no-compile", action="store_true")
     p.add_argument("-t", "--test-case")
     p.add_argument("-l", "--log-file", help="Path to log file")

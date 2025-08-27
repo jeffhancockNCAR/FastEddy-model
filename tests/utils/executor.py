@@ -2,6 +2,7 @@
 
 import os
 import time
+import shutil
 import subprocess
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
@@ -164,6 +165,7 @@ class Executor:
         self._print("[Executor] All jobs completed.")
 
     def run_pytest_for_case(self, case_name, case_cfg):
+        case_path = os.path.join(self.output_dir, case_name)
         output_path = os.path.join(self.output_dir, case_name, "output")
         os.makedirs(output_path, exist_ok=True)
 
@@ -176,11 +178,15 @@ class Executor:
 
         self._print(f"[Pytest] Running regression test for: {case_name}")
 
+        src_input_name = case_cfg.get("input_file", f"{case_name}.in")
+        in_file_path = os.path.join(case_path, src_input_name)
+
         cmd = [
             "pytest",
             "tests",  # runs repo_root/tests
             "--output-dir", output_path,
             "--ref-dir", ref_dir,
+            "--in-file", in_file_path,
             "--html", os.path.join(output_path, report_file),
         ]
 
@@ -243,6 +249,9 @@ class Executor:
                 line = f"NtBatch = {batchsteps}  # set by test suite\n"
             elif s.startswith("outPath"):
                 final_out_path = os.path.join(case_dir, "output/")
+                # Remove the output dir before recreating it.  Having old files in it can be problematic, particularly
+                # if the number and names of the output files are not the same as the old ones (not overwriting).
+                shutil.rmtree(final_out_path)
                 os.makedirs(final_out_path, exist_ok=True)
                 line = f"outPath = {final_out_path}  # overridden by test suite\n"
                 self._log_info(f"[Executor] Created output directory: {final_out_path}")
