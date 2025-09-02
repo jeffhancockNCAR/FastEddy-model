@@ -35,8 +35,14 @@ def plot_vertical_profile(ref_ds, mod_ds, var_name, filename):
         print(f"⚠️ Skipping {var_name} in {filename} (missing required dimensions: time, zIndex)")
         return
 
-    ref_profile = ref_ds[var_name].isel(time=-1, yIndex=300, xIndex=300)
-    mod_profile = mod_ds[var_name].isel(time=-1, yIndex=300, xIndex=300)
+    if 'SBL' in filename:
+        # Example03_SBL has smaller dimensions of output than Example01 and Example02.  For Example03: yIndex = 126 ; xIndex = 128 ;
+        # So use 100 instead of 300
+        ref_profile = ref_ds[var_name].isel(time=-1, yIndex=100, xIndex=100)
+        mod_profile = mod_ds[var_name].isel(time=-1, yIndex=100, xIndex=100)
+    else:
+        ref_profile = ref_ds[var_name].isel(time=-1, yIndex=300, xIndex=300)
+        mod_profile = mod_ds[var_name].isel(time=-1, yIndex=300, xIndex=300)
 
     z_levels = ref_ds["zIndex"].values  # Get height levels
 
