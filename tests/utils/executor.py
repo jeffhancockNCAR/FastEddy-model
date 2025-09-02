@@ -251,7 +251,8 @@ class Executor:
                 final_out_path = os.path.join(case_dir, "output/")
                 # Remove the output dir before recreating it.  Having old files in it can be problematic, particularly
                 # if the number and names of the output files are not the same as the old ones (not overwriting).
-                shutil.rmtree(final_out_path)
+                if os.path.exists(final_out_path):
+                    shutil.rmtree(final_out_path)
                 os.makedirs(final_out_path, exist_ok=True)
                 line = f"outPath = {final_out_path}  # overridden by test suite\n"
                 self._log_info(f"[Executor] Created output directory: {final_out_path}")
