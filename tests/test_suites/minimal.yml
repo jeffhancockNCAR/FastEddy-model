@@ -1,5 +1,5 @@
-# Would we want to optionally be able to specify any of timesteps, outputfreq, or batchsteps at this top level, which
-# could then be over-ridden by specific tests?  Let's say yes for now...
+# We can optionally specify any of timesteps, outputfreq, or batchsteps at this top level, which
+# can be over-ridden by specific tests.
 timesteps: 10
 outputfreq: 2
 batchsteps: 2
