@@ -1,6 +1,7 @@
 import os
 import pytest
 import xarray as xr
+import math
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import mean_squared_error
@@ -35,8 +36,15 @@ def plot_vertical_profile(ref_ds, mod_ds, var_name, filename):
         print(f"⚠️ Skipping {var_name} in {filename} (missing required dimensions: time, zIndex)")
         return
 
-    ref_profile = ref_ds[var_name].isel(time=-1, yIndex=300, xIndex=300)
-    mod_profile = mod_ds[var_name].isel(time=-1, yIndex=300, xIndex=300)
+    if 'SBL' in filename or 'BOMEX' in filename or 'CANOPY' in filename:
+        # Example03_SBL has smaller dimensions of output than Example01 and Example02.  For Example03: yIndex = 126 ; xIndex = 128 ;
+        # So use 100 instead of 300
+        # Example04_BOMEX has smaller dimensions too.  Use 100 for it as well.
+        ref_profile = ref_ds[var_name].isel(time=-1, yIndex=100, xIndex=100)
+        mod_profile = mod_ds[var_name].isel(time=-1, yIndex=100, xIndex=100)
+    else:
+        ref_profile = ref_ds[var_name].isel(time=-1, yIndex=300, xIndex=300)
+        mod_profile = mod_ds[var_name].isel(time=-1, yIndex=300, xIndex=300)
 
     z_levels = ref_ds["zIndex"].values  # Get height levels
 
@@ -64,18 +72,23 @@ def plot_difference_histogram(ref_ds, mod_ds, var_name, filename):
     mod_values = mod_ds[var_name].values.ravel()
     differences = mod_values - ref_values
 
-    plt.figure(figsize=(8, 6))
-    plt.hist(differences, bins=50, color="gray", alpha=0.7, edgecolor="black")
-    plt.axvline(0, color="red", linestyle="--", label="Zero Difference")
-    plt.xlabel(f"Difference in {var_name}")
-    plt.ylabel("Frequency")
-    plt.title(f"Histogram of Differences for {var_name} in {filename}")
-    plt.legend()
+    # Test for all elements of differences being nan before trying to proceeed.
+    # This is needed for Example04_BOMEX
+    all_nan = all(math.isnan(x) for x in differences)
+    if not all_nan:
+        plt.figure(figsize=(8, 6))
+        plt.hist(differences, bins=50, color="gray", alpha=0.7, edgecolor="black")
+        plt.axvline(0, color="red", linestyle="--", label="Zero Difference")
+        plt.xlabel(f"Difference in {var_name}")
+        plt.ylabel("Frequency")
+        plt.title(f"Histogram of Differences for {var_name} in {filename}")
+        plt.legend()
     
-    os.makedirs("comparison_plots", exist_ok=True)
-    plt.savefig(f"comparison_plots/{filename}_{var_name}_histogram.png")
-    plt.close()
-
+        os.makedirs("comparison_plots", exist_ok=True)
+        plt.savefig(f"comparison_plots/{filename}_{var_name}_histogram.png")
+        plt.close()
+    else: 
+        print('Could not plot difference histogram for ' + var_name + ' as all difference values are nan.')
 
 def plot_rmse_over_time(ref_ds, mod_ds, var_name, filename):
     """Plot RMSE over time between ref and mod outputs."""
@@ -89,6 +102,11 @@ def plot_rmse_over_time(ref_ds, mod_ds, var_name, filename):
     for t in range(len(time_values)):
         ref_t = ref_ds[var_name].isel(time=t).values.ravel()
         mod_t = mod_ds[var_name].isel(time=t).values.ravel()
+        # Test for all elements of ref and mod being nan before trying to proceeed.
+        # This is needed for Example04_BOMEX
+        if all(math.isnan(x) for x in ref_t) and all(math.isnan(x) for x in mod_t):
+            print('Could not plot RMSE over time for ' + var_name + ' as there are nans.')
+            return
         rmse_values.append(mean_squared_error(ref_t, mod_t, squared=False))  # RMSE
 
     plt.figure(figsize=(8, 6))

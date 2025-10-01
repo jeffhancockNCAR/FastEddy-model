@@ -21,6 +21,6 @@ echo "Current working dir: $(pwd)"
 echo "Hostname: $(hostname)"
 echo "Running FastEddy job: {{ test_case.name }}"
 
-mpiexec -n {{ execution.mpi_ranks }} --ppn {{ execution.mpi_ranks }} \
+mpiexec -n {{ mpi_ranks }} --ppn {{ mpi_ranks }} \
   {{ execution.launcher }} ${SRCDIR}/FastEddy \
   ${OUTPUTDIR}/{{ test_case.base_name }}/{{ test_case.base_name }}_{{ execution.timesteps | default(10) }}steps.in

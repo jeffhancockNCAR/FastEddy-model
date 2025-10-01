@@ -44,7 +44,7 @@ def main():
     print(cfg)
     print("Validating....")
     validate_cfg(config=cfg,
-             required_keys=["paths.repo_root", "compile.enabled", "execution.pbs", "execution.mpi_ranks", "test_cases"],logger=logger)
+             required_keys=["paths.repo_root", "compile.enabled", "execution.pbs", "test_cases"],logger=logger)
 
     logger.info("Config loaded and validated.")
     

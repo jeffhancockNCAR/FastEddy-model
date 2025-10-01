@@ -1,5 +1,6 @@
 # utils/executor.py
 
+import datetime
 import os
 import time
 import shutil
@@ -249,9 +250,17 @@ class Executor:
                 line = f"NtBatch = {batchsteps}  # set by test suite\n"
             elif s.startswith("outPath"):
                 final_out_path = os.path.join(case_dir, "output/")
-                # Remove the output dir before recreating it.  Having old files in it can be problematic, particularly
+                # If the output dir already exists, rename the current one before recreating it.  Having old files in it can be problematic, particularly
                 # if the number and names of the output files are not the same as the old ones (not overwriting).
-                shutil.rmtree(final_out_path)
+                if os.path.exists(final_out_path):
+                    if final_out_path[-1] == '/':
+                        path_to_rename = final_out_path[:-1]
+                    else:
+                        path_to_rename = final_out_path
+                    ts = os.path.getmtime(path_to_rename)
+                    ts_str = str(datetime.datetime.fromtimestamp(ts)).replace(' ', '_')
+                    new_name = path_to_rename + '.' + ts_str
+                    os.rename(path_to_rename, new_name)
                 os.makedirs(final_out_path, exist_ok=True)
                 line = f"outPath = {final_out_path}  # overridden by test suite\n"
                 self._log_info(f"[Executor] Created output directory: {final_out_path}")
@@ -282,6 +291,7 @@ class Executor:
         }
 
         context = {
+            "mpi_ranks": merged_test_case.get("mpi_ranks"),
             "pbs": self.cfg.get("execution", {}).get("pbs", {}),
             "slurm": self.cfg.get("execution", {}).get("slurm", {}),
             "paths": {

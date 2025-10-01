@@ -219,6 +219,25 @@ def load_and_merge_config(config_fn, suite, logger=None):
     
     logger.info('merged_config after rolling up steps values to test cases: ' + str(merged_config))
     
+    # 8. mpi-ranks may be specified under execution, and also within each test case.
+    #    Roll this up into each test case, then delete the one under execution, so that the rest of the code only needs
+    #    to look for it in one place (in each test case).  If specified at the test case level, that over-rides the 
+    #    more general value under execution, so only copy that value into a test case if it doesn't have that
+    #    key already.
+    #for key in [TIMESTEPS, OUTPUTFREQ, BATCHSTEPS]:
+    #    if key in merged_config:
+    for test_case in merged_config[TEST_CASES]:
+        for test_case_name in test_case.keys(): # There will be only one key for the test case, which is its name
+            test_case_config = test_case[test_case_name]
+            # See if 
+            if not MPI_RANKS in test_case_config:
+                # Add the top level value to the config of the test case
+                test_case_config[MPI_RANKS] = merged_config[EXECUTION][MPI_RANKS]
+    # Now remove the top level key/value pair
+    del merged_config[EXECUTION][MPI_RANKS]
+    
+    logger.info('merged_config after rolling up steps values to test cases: ' + str(merged_config))
+    
     return merged_config
     
     
@@ -307,7 +326,8 @@ def validate_cfg(config, required_keys, logger=None):
                     logger.info('Value of ' + TEST_CASES + '.' + key + '.' + TIMESTEPS + ' is not an int type: ' + timesteps)
                     exit(9)
             except KeyError:
-                pass # Not required
+                logger.info(TEST_CASES + '.' + key + '.' + TIMESTEPS + ' NOT FOUND')
+                exit(9)
         
             #   outputfreq - make sure it's an int
             try:
@@ -316,7 +336,8 @@ def validate_cfg(config, required_keys, logger=None):
                     logger.info('Value of ' + TEST_CASES + '.' + key + '.' + OUTPUTFREQ + ' is not an int type: ' + outputfreq)
                     exit(10)
             except KeyError:
-                pass # Not required
+                logger.info(TEST_CASES + '.' + key + '.' + OUTPUTFREQ + ' NOT FOUND')
+                exit(10)
         
             #   batchsteps - make sure it's an int
             try:
@@ -325,7 +346,18 @@ def validate_cfg(config, required_keys, logger=None):
                     logger.info('Value of ' + TEST_CASES + '.' + key + '.' + BATCHSTEPS + ' is not an int type: ' + batchsteps)
                     exit(11)
             except KeyError:
-                pass # Not required
+                logger.info(TEST_CASES + '.' + key + '.' + BATCHSTEPS + ' NOT FOUND')
+                exit(11)
+            
+            #   mpi_ranks - make sure it's an int
+            try:
+                mpiranks = test_case_settings[MPI_RANKS]
+                if not type(mpiranks) == int:
+                    logger.info('Value of ' + TEST_CASES + '.' + key + '.' + MPI_RANKS + ' is not an int type: ' + mpiranks)
+                    exit(28)
+            except KeyError:
+                logger.info(TEST_CASES + '.' + key + '.' + MPI_RANKS + ' NOT FOUND')
+                exit(28)
     
     # Already checked that repo_root is a directory in load_and_merge_config.
     
@@ -348,12 +380,6 @@ def validate_cfg(config, required_keys, logger=None):
         exit(13)
             
     # Check execution values.
-    #    mpi_ranks - make sure it's an int
-    mpi_ranks = config[EXECUTION][MPI_RANKS]
-    if not type(mpi_ranks) == int:
-        logger.info('Value of ' + EXECUTION + '.' + MPI_RANKS + ' is not an int type: ' + mpi_ranks)
-        exit(14)
-            
     #    launcher - check against list of valid values
     launcher = config[EXECUTION][LAUNCHER]
     if not launcher in VALID_LAUNCHERS:
@@ -439,7 +465,7 @@ def validate_cfg(config, required_keys, logger=None):
         exit(26)
     elif environment == DOE_OLCF:
         logger.info(DOE_OLCF + 'environment not yet implemented. Stopping.')
-        exit(26)
+        exit(27)
         
     logger.info('Configuration is OK.')
         
