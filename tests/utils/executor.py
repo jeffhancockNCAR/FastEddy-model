@@ -179,6 +179,10 @@ class Executor:
 
         self._print(f"[Pytest] Running regression test for: {case_name}")
 
+        # Pass the name of the test case as an environment variable so that some tests can be skipped for some test cases
+        env_vars = os.environ.copy()
+        env_vars['PYTEST_CASE_NAME'] = case_name
+
         src_input_name = case_cfg.get("input_file", f"{case_name}.in")
         in_file_path = os.path.join(case_path, src_input_name)
 
@@ -192,7 +196,7 @@ class Executor:
         ]
 
         try:
-            subprocess.run(cmd, check=True, cwd=self.repo_root)
+            subprocess.run(cmd, env=env_vars, check=True, cwd=self.repo_root)
             self._print(f"[Pytest] {case_name} PASSED")
         except subprocess.CalledProcessError:
             self._print(f"[Pytest] {case_name} FAILED")

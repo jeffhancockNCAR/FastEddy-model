@@ -119,7 +119,7 @@ def plot_rmse_over_time(ref_ds, mod_ds, var_name, filename):
     plt.savefig(f"comparison_plots/{filename}_{var_name}_rmse.png")
     plt.close()
 
-
+@pytest.mark.skipif('Example07_DISPERSION_CBL' in os.environ['PYTEST_CASE_NAME'], reason='output files are not netCDF')
 def test_netcdf_visualization(output_dirs, in_file):
     """Generate multiple visualizations for model comparison."""
     ref_dir, mod_dir = output_dirs

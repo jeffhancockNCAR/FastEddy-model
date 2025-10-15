@@ -3,6 +3,7 @@ import pytest
 import xarray as xr
 import numpy as np
 
+@pytest.mark.skipif('Example07_DISPERSION_CBL' in os.environ['PYTEST_CASE_NAME'], reason='output files are not netCDF')
 def test_netcdf_values(output_dirs, in_file):
     """Compare numerical values of each variable between reference and model output."""
     ref_dir, mod_dir = output_dirs

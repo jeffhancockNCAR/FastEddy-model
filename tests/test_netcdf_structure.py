@@ -2,6 +2,7 @@ import os
 import pytest
 import xarray as xr
 
+@pytest.mark.skipif('Example07_DISPERSION_CBL' in os.environ['PYTEST_CASE_NAME'], reason='output files are not netCDF')
 def test_netcdf_structure(output_dirs, in_file):
     """Ensure NetCDF variables and dimensions are identical in reference vs. model output."""
     ref_dir, mod_dir = output_dirs
