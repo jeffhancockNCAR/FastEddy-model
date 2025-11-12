@@ -54,6 +54,7 @@ PYTEST_REPORT_NAME = 'pytest_report_name'
 QUEUE = 'queue'
 REGULAR = 'regular'
 REPO_ROOT = 'repo_root'
+SELECT = 'select'
 SET_GPU_RANK = 'set_gpu_rank'
 SCHEDULER = 'scheduler'
 SLURM = 'slurm'
@@ -229,12 +230,29 @@ def load_and_merge_config(config_fn, suite, logger=None):
     for test_case in merged_config[TEST_CASES]:
         for test_case_name in test_case.keys(): # There will be only one key for the test case, which is its name
             test_case_config = test_case[test_case_name]
-            # See if 
+            # See if it is specified in the test case or not
             if not MPI_RANKS in test_case_config:
                 # Add the top level value to the config of the test case
                 test_case_config[MPI_RANKS] = merged_config[EXECUTION][MPI_RANKS]
     # Now remove the top level key/value pair
     del merged_config[EXECUTION][MPI_RANKS]
+    
+    #9. select is specified in pbs.yml under execution.pbs, but may also be specified within each test case 
+    #   (as is needed for Example04_BOMEX). Roll this up into each test case, then delete the one under execution.pbs,
+    #   so that the rest of the code only needs to look for it in one place (in each test case).  If specified at the 
+    #   test case level, that over-rides the more general value under execution.pbs, so only copy that value into a 
+    #   test case if it doesn't have that key already.  This is only applicable when the scheduler is pbs, so check
+    #   for that first.
+    if merged_config[SCHEDULER] == PBS:
+        for test_case in merged_config[TEST_CASES]:
+            for test_case_name in test_case.keys(): # There will be only one key for the test case, which is its name
+                test_case_config = test_case[test_case_name]
+                # See if it is specified in the test case or not
+                if not SELECT in test_case_config:
+                    # Add the top level value to the config of the test case
+                    test_case_config[SELECT] = merged_config[EXECUTION][PBS][SELECT]
+        # Now remove the top level key/value pair
+        del merged_config[EXECUTION][PBS][SELECT]
     
     logger.info('merged_config after rolling up steps values to test cases: ' + str(merged_config))
     

@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -A {{ pbs.account }}
 #PBS -N {{ pbs.job_name }}
-#PBS -l select={{ pbs.select }}
+#PBS -l select={{ test_case.select }}
 #PBS -l walltime={{ pbs.walltime }}
 #PBS -q {{ pbs.queue }}
 {% if pbs.join_output %}
