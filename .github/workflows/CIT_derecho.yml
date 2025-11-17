@@ -36,14 +36,8 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it  v2 or v4? (Julie's example shows v2)
       - uses: actions/checkout@v4
 
-      # Compile and run the FastEddy code via a python script
-      - name: Run CompileRunFastEddy.py
-        run: |
-          cd ..
-          ./CompileRunFastEddy.py -c derecho_cit.json
-
-      # Run pytest on the results of the FastEddy run
-      - name: Run pytest
+      # Run the CI framework
+      - name: Run CI framework
         run: |
           source /glade/work/ishitas/python_envs/py_derecho/bin/activate
           cd /glade/work/fasteddyrt/jeff/TestFramework/FastEddy-CI/tests
