@@ -40,14 +40,56 @@ jobs:
       - name: Run CI framework
         run: |
           source /glade/work/ishitas/python_envs/py_derecho/bin/activate
-          cd /glade/work/fasteddyrt/jeff/TestFramework/FastEddy-CI/tests
+          cd /glade/work/fasteddyrt/repos/FastEddy-CI/tests
           python3 run_tests.py --suite minimal -c config/top.yml
           
-      - name: Upload test report
+      - name: Upload test report for Example01_NBL
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-report
-          path: /glade/derecho/scratch/fasteddyrt/fasteddy_results/report.html
+          name: pytest-report-1
+          path: /glade/derecho/scratch/fasteddyrt/fasteddy_results/Example01_NBL/output/Example01_NBL_report.html
+
+      - name: Upload test report for Example02_CBL
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report-2
+          path: /glade/derecho/scratch/fasteddyrt/fasteddy_results/Example02_CBL/output/Example02_CBL_report.html
+
+      - name: Upload test report for Example03_SBL
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report-3
+          path: /glade/derecho/scratch/fasteddyrt/fasteddy_results/Example03_SBL/output/Example03_SBL_report.html
+
+      - name: Upload test report for Example04_BOMEX
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report-4
+          path: /glade/derecho/scratch/fasteddyrt/fasteddy_results/Example04_BOMEX/output/Example04_BOMEX_report.html
+
+      - name: Upload test report for Example05_CANOPY
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report-5
+          path: /glade/derecho/scratch/fasteddyrt/fasteddy_results/Example05_CANOPY/output/Example05_CANOPY_report.html
+
+      - name: Upload test report for Example06_OFFSHORE
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report-6
+          path: /glade/derecho/scratch/fasteddyrt/fasteddy_results/Example06_OFFSHORE/output/Example06_OFFSHORE_report.html
+
+      - name: Upload test report for Example07_DISPERSION_CBL
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report-7c
+          path: /glade/derecho/scratch/fasteddyrt/fasteddy_results/Example07_DISPERSION_CBL/output/Example07_DISPERSION_CBL_report.html
+
+      - name: Upload test report for Example07_DISPERSION_SBL
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report-7s
+          path: /glade/derecho/scratch/fasteddyrt/fasteddy_results/Example07_DISPERSION_SBL/output/Example07_DISPERSION_SBL_report.html
       
       # Runs a simple script that appends the datetime to a file
       - name: Record the datetime of the run
