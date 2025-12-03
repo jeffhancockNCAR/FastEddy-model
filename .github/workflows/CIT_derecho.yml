@@ -41,7 +41,7 @@ jobs:
         run: |
           source /glade/work/ishitas/python_envs/py_derecho/bin/activate
           cd /glade/work/fasteddyrt/repos/FastEddy-CI/tests
-          python3 run_tests.py --suite minimal -c config/workflow_top.yml
+          python3 run_tests.py --suite comprehensive -c config/workflow_top.yml
           
       - name: Upload test report for Example01_NBL
         uses: actions/upload-artifact@v4
