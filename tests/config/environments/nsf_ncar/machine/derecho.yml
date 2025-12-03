@@ -1,5 +1,0 @@
-execution:
-  pbs:
-    queue: "main"
-    walltime: "06:00:00"
-    command: "mpiexec"
