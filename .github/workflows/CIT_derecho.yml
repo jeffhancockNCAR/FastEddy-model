@@ -39,7 +39,7 @@ jobs:
       # Run the CI framework
       - name: Run CI framework
         run: |
-          source /glade/work/ishitas/python_envs/py_derecho/bin/activate
+          source /glade/work/fasteddyrt/python_envs/py_derecho/bin/activate
           cd /glade/work/fasteddyrt/repos/FastEddy-CI/tests
           python3 run_tests.py --suite comprehensive -c config/workflow_top.yml
 
